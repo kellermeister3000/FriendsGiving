@@ -8,19 +8,56 @@
 import SwiftUI
 
 struct ListView: View {
+    @EnvironmentObject var friendsVM: FriendsViewModel
+    @State private var sheetIsPresented = false
+    
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        NavigationStack {
+            List {
+                ForEach(friendsVM.friends) { friend in
+                    NavigationLink {
+                        DetailView(friend: friend)
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text(friend.name)
+                                .font(.title2)
+                            Text(friend.bringing)
+                                .font(.callout)
+                        }
+                    }
+                }
+                .onDelete(perform: friendsVM.deleteFriend)
+                .onMove(perform: friendsVM.moveFriend)
+            }
+            .listStyle(.plain)
+            .navigationTitle("🦃 Friends-Giving 🥧")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    EditButton()
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        sheetIsPresented.toggle()
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+
+                }
+            }
         }
-        .padding()
+        .sheet(isPresented: $sheetIsPresented) {
+            NavigationStack {
+                DetailView(friend: Friend())
+            }
+        }
     }
 }
 
 struct ListView_Previews: PreviewProvider {
     static var previews: some View {
         ListView()
+            .environmentObject(FriendsViewModel())
     }
 }
+
